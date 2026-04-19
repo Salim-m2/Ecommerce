@@ -104,6 +104,15 @@ DATABASES = {
 }
 
 # ─────────────────────────────────────────────
+# AUTHENTICATION BACKENDS
+# Replace Django's default SQL auth with our
+# custom MongoDB backend
+# ─────────────────────────────────────────────
+AUTHENTICATION_BACKENDS = [
+    'apps.authentication.backends.MongoAuthBackend',
+]
+
+# ─────────────────────────────────────────────
 # MONGODB CONNECTION (mongoengine)
 # ─────────────────────────────────────────────
 mongoengine.connect(
