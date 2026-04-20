@@ -2,6 +2,7 @@
 
 import { createBrowserRouter, Outlet, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+
 import {
   selectIsAuthenticated,
   selectIsInitialized,
@@ -120,6 +121,7 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
+            { path: '/profile', element: <div className="p-8 text-white">Profile Page - Protected</div> },
           // Profile, orders, wishlist — added Week 10
           // Admin dashboard — added Week 9
         ],
