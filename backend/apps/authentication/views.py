@@ -14,6 +14,8 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 
+from apps.authentication.documents import Token
+from apps.users.documents import User
 from apps.authentication.backends import MongoAuthBackend
 from apps.authentication.serializers import (
     RegisterSerializer,
@@ -217,5 +219,108 @@ class MeView(APIView):
         # set by MongoJWTAuthentication
         return Response(
             UserSerializer(request.user).data,
+            status=status.HTTP_200_OK
+        )
+    
+# ─────────────────────────────────────────────
+# PASSWORD RESET REQUEST VIEW
+# POST /api/v1/auth/password/reset/
+#
+# Accepts an email address, creates a Token
+# document, and would send a reset email.
+# Email sending is wired up in Week 8.
+# ─────────────────────────────────────────────
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email', '').lower().strip()
+
+        if not email:
+            return Response(
+                {'error': 'Email is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Always return the same response whether or not the email exists
+        # This prevents user enumeration attacks — an attacker shouldn't
+        # be able to tell which emails are registered by trying this endpoint
+        try:
+            user = User.objects.get(email=email)
+            # Generate a secure token valid for 1 hour
+            plain_token = Token.create_for_user(
+                user,
+                token_type='password_reset',
+                hours_valid=1,
+            )
+            # TODO Week 8: send_password_reset_email.delay(user.id, plain_token)
+            # For now, print to console so we can test manually
+            print(f"\n[DEV ONLY] Password reset token for {email}: {plain_token}\n")
+
+        except User.DoesNotExist:
+            # Do nothing — but don't reveal that the email doesn't exist
+            pass
+
+        return Response(
+            {'detail': 'If this email exists, a reset link will be sent.'},
+            status=status.HTTP_200_OK
+        )
+
+
+# ─────────────────────────────────────────────
+# PASSWORD RESET CONFIRM VIEW
+# POST /api/v1/auth/password/reset/confirm/
+#
+# Accepts the plain token + new password.
+# Verifies the token, updates the password,
+# deletes the token so it can't be reused.
+# ─────────────────────────────────────────────
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        plain_token  = request.data.get('token', '').strip()
+        new_password = request.data.get('new_password', '').strip()
+
+        # Validate inputs
+        if not plain_token:
+            return Response(
+                {'error': 'Reset token is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not new_password or len(new_password) < 8:
+            return Response(
+                {'error': 'New password must be at least 8 characters.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify the token — returns Token document or None
+        token_doc = Token.verify_token(plain_token, token_type='password_reset')
+
+        if token_doc is None:
+            return Response(
+                {'error': 'Reset token is invalid or has expired.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Look up the user
+        try:
+            user = User.objects.get(id=token_doc.user_id)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Update the password securely
+        user.set_password(new_password)
+        user.save()
+
+        # Delete the token so it cannot be reused
+        token_doc.delete()
+
+        return Response(
+            {'detail': 'Password has been reset successfully. Please log in.'},
             status=status.HTTP_200_OK
         )
