@@ -94,3 +94,28 @@ class User(Document):
 
     def __str__(self):
         return f"{self.full_name} <{self.email}>"
+
+
+    # ─────────────────────────────────────────────
+    # DRF COMPATIBILITY PROPERTIES
+    # Django REST Framework and its throttling system
+    # expect these attributes on any user object.
+    # ─────────────────────────────────────────────
+    @property
+    def is_authenticated(self):
+        """Always True for a real user — DRF uses this to distinguish
+        authenticated users from AnonymousUser."""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """Always False for a real user."""
+        return False
+
+    @property
+    def is_staff(self):
+        """Admins are considered staff."""
+        return self.role == 'admin'
+
+    def __str__(self):
+        return f"{self.full_name} <{self.email}>"
