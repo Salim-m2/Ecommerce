@@ -1,12 +1,14 @@
 // src/components/layout/Navbar.jsx
 
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingBag, User, LogOut, Menu, X } from 'lucide-react'
+import { Search, ShoppingCart, User, LogOut, Menu, X, ShoppingBag} from 'lucide-react';
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { useSelector } from 'react-redux'
 import { selectCartCount } from '../../store/cartSlice'
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../store/authSlice';
 
 // ─────────────────────────────────────────────
 // NAVBAR COMPONENT
@@ -20,12 +22,22 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth()
   const cartCount           = useSelector(selectCartCount)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [query, setQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+      setQuery('');
+    }
+  };
 
   const handleLogout = async () => {
     await logout()
     toast.success('Logged out successfully.')
     navigate('/login')
   }
+
 
   return (
     <nav className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
@@ -42,7 +54,22 @@ const Navbar = () => {
               ShopZetu
             </span>
           </Link>
-
+          {/* Search form */}
+          {/* <form onSubmit={handleSearch} className="flex-1 max-w-md">
+            <div className="relative">
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              />
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search products..."
+                className="w-full pl-8 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-gray-50"
+              />
+            </div>
+          </form> */}
           {/* ── Desktop Nav ── */}
           <div className="hidden md:flex items-center gap-6">
 

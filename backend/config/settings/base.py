@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import timedelta
 import environ
 import mongoengine
-
+import cloudinary
 # ─────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────
@@ -48,6 +48,7 @@ LOCAL_APPS = [
     'apps.authentication',
     'apps.users',
     'apps.core',
+    'apps.products'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -120,6 +121,19 @@ mongoengine.connect(
     host=env('MONGO_URI'),
     alias='default',
 )
+
+# Cloudinary
+cloudinary.config(
+    cloud_name=env('CLOUDINARY_CLOUD_NAME'),
+    api_key=env('CLOUDINARY_API_KEY'),
+    api_secret=env('CLOUDINARY_API_SECRET'),
+    secure=True,          # Always use HTTPS URLs
+)
+
+# Ensure MongoDB indexes exist on every startup.
+# create_index() is idempotent — safe to call repeatedly.
+from apps.products.indexes import create_product_indexes
+create_product_indexes()
 
 # ─────────────────────────────────────────────
 # DJANGO REST FRAMEWORK

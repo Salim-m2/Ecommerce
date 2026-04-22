@@ -1,21 +1,21 @@
-// src/router.jsx
-
 import { createBrowserRouter, Outlet, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import {
-  selectIsAuthenticated,
-  selectIsInitialized,
-} from './store/authSlice'
+import { selectIsAuthenticated, selectIsInitialized } from './store/authSlice'
 
 import Navbar   from './components/layout/Navbar'
 import Footer   from './components/layout/Footer'
 import Spinner  from './components/ui/Spinner'
 
-import Home            from './pages/Home'
-import Login           from './pages/auth/Login'
-import Register        from './pages/auth/Register'
-import ForgotPassword  from './pages/auth/ForgotPassword'
+import Home     from './pages/Home'
+import Login    from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ProductList from './pages/ProductList'
+import ProductDetail from './pages/ProductDetail'
 
+// ─────────────────────────────────────────────
+// ROOT LAYOUT
+// ─────────────────────────────────────────────
 const RootLayout = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
@@ -28,10 +28,14 @@ const RootLayout = () => {
   )
 }
 
+// ─────────────────────────────────────────────
+// PROTECTED ROUTE
+// ─────────────────────────────────────────────
 const ProtectedRoute = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated)
   const isInitialized   = useSelector(selectIsInitialized)
 
+  // ⏳ Wait until auth check finishes
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -40,17 +44,23 @@ const ProtectedRoute = () => {
     )
   }
 
+  // ❌ Not logged in → redirect
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
+  // ✅ Logged in → render child routes
   return <Outlet />
 }
 
+// ─────────────────────────────────────────────
+// GUEST ROUTE (login/register only)
+// ─────────────────────────────────────────────
 const GuestRoute = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated)
   const isInitialized   = useSelector(selectIsInitialized)
 
+  // ⏳ Wait until auth check finishes
   if (!isInitialized) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -59,6 +69,7 @@ const GuestRoute = () => {
     )
   }
 
+  // ✅ Already logged in → redirect away
   if (isAuthenticated) {
     return <Navigate to="/" replace />
   }
@@ -76,8 +87,9 @@ const NotFound = () => (
     <p className="text-slate-400 text-sm mb-8">
       The page you're looking for doesn't exist or hasn't been built yet.
     </p>
-    
-     <a href="/"
+
+    <a
+      href="/"
       className="px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-sm font-medium transition-colors"
     >
       Back to home
@@ -85,36 +97,42 @@ const NotFound = () => (
   </div>
 )
 
+// ─────────────────────────────────────────────
+// ROUTER CONFIG
+// ─────────────────────────────────────────────
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
 
-      // ── Public routes ──────────────────────
+      // 🌍 PUBLIC ROUTES
       { path: '/', element: <Home /> },
+      { path: '/products', element: <ProductList /> },
+      { path: '/products/:slug', element: <ProductDetail /> },
 
-      // ── Guest only routes ──────────────────
+      // 🚫 GUEST ONLY ROUTES
       {
         element: <GuestRoute />,
         children: [
-          { path: '/login',           element: <Login /> },
-          { path: '/register',        element: <Register /> },
+          { path: '/login', element: <Login /> },
+          { path: '/register', element: <Register /> },
           { path: '/forgot-password', element: <ForgotPassword /> },
         ],
       },
 
-      // ── Protected routes ───────────────────
+      // 🔐 PROTECTED ROUTES
       {
         element: <ProtectedRoute />,
         children: [
-          // Placeholder — replaced with real pages in Week 10
           { path: '/profile', element: <div className="p-8 text-white">Profile — Week 10</div> },
+          // future:
+          // { path: '/cart', element: <Cart /> },
+          // { path: '/checkout', element: <Checkout /> },
         ],
       },
 
-      // ── 404 ────────────────────────────────
+      // ❌ 404
       { path: '*', element: <NotFound /> },
-
     ],
   },
 ])

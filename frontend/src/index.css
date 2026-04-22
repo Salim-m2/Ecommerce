@@ -1,1 +1,10 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Swiper thumbnail active border */
+.thumbnail-swiper .swiper-slide-thumb-active > div {
+  border-color: #4f46e5; /* indigo-600 */
+}

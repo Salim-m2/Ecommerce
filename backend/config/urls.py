@@ -12,5 +12,7 @@ urlpatterns = [
         # Users (profile, addresses — built in Week 10)
         path('users/', include('apps.users.urls')),
 
+        path("", include("apps.products.urls")),
     ])),
 ]
+
