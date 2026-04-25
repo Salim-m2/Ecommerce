@@ -25,7 +25,7 @@ import { useProduct, useProducts } from '../hooks/useProducts';
 import ProductGrid from '../components/product/ProductGrid';
 import StarRating from '../components/product/StarRating';
 import { formatPrice, buildCloudinaryUrl } from '../utils/formatters';
-
+import useCart from '../hooks/useCart'
 // ── Tab content components ─────────────────────────────────────────────────
 
 const DescriptionTab = ({ description }) => (
@@ -90,7 +90,7 @@ const TABS = ['Description', 'Reviews', 'Shipping'];
 const ProductDetail = () => {
   const { slug } = useParams();
   const { data: product, isLoading, isError } = useProduct(slug);
-
+  const { addItem, isLoading: cartIsLoading } = useCart()
   // Swiper thumbs instance — needed for the thumbnail sync
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
@@ -168,9 +168,21 @@ const ProductDetail = () => {
     setQuantity(1);
   };
 
-  const handleAddToCart = () => {
-    toast('Cart coming in Week 5! 🛒', { icon: '🛒' });
-  };
+ const handleAddToCart = async () => {
+   if (!matchedVariant) return
+
+  const result = await addItem(
+    product.id,
+    matchedVariant.variant_id,
+    quantity,
+  )
+
+    if (result.success) {
+      toast.success(`${product.name} added to cart!`)
+    } else {
+      toast.error(result.error || 'Failed to add to cart. Please try again.')
+    }
+  }
 
   const handleAddToWishlist = () => {
     toast('Wishlist coming in Week 7! ❤️', { icon: '❤️' });
@@ -420,20 +432,23 @@ const ProductDetail = () => {
               {/* Add to Cart */}
               <button
                 onClick={handleAddToCart}
-                disabled={!canAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl font-semibold text-sm transition-all
-                  ${canAddToCart
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 shadow-sm'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  }`}
-              >
-                <ShoppingCart size={16} />
-                {!hasVariantSelected
-                  ? 'Select options'
-                  : variantStock === 0
-                    ? 'Out of Stock'
-                    : 'Add to Cart'
-                }
+                disabled={!matchedVariant || matchedVariant.stock === 0 || cartIsLoading}
+                className={`w-full flex items-center justify-center gap-2 py-3 px-6
+                            bg-violet-600 hover:bg-violet-700 text-white font-semibold
+                            rounded-xl transition-colors disabled:opacity-50
+                            disabled:cursor-not-allowed
+                            ${cartIsLoading ? 'opacity-75 cursor-wait' : ''}`}>
+                {cartIsLoading ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent
+                                  rounded-full animate-spin" />
+                ) : (
+                  <ShoppingCart size={16} />
+                )}
+                {!matchedVariant
+                  ? 'Select Options'
+                  : matchedVariant.stock === 0
+                  ? 'Out of Stock'
+                  : 'Add to Cart'}
               </button>
 
               {/* Wishlist */}

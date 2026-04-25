@@ -6,6 +6,7 @@ from datetime import timedelta
 import environ
 import mongoengine
 import cloudinary
+
 # ─────────────────────────────────────────────
 # PATHS
 # ─────────────────────────────────────────────
@@ -15,7 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ENVIRONMENT VARIABLES
 # ─────────────────────────────────────────────
 env = environ.Env(
-    DEBUG=(bool, False),
+    DEBUG=(bool, True),
+    
 )
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
@@ -48,7 +50,8 @@ LOCAL_APPS = [
     'apps.authentication',
     'apps.users',
     'apps.core',
-    'apps.products'
+    'apps.products',
+    'apps.cart',  
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -133,6 +136,7 @@ cloudinary.config(
 # Ensure MongoDB indexes exist on every startup.
 # create_index() is idempotent — safe to call repeatedly.
 from apps.products.indexes import create_product_indexes
+
 create_product_indexes()
 
 # ─────────────────────────────────────────────

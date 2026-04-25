@@ -1,6 +1,7 @@
 import uuid
 import re
 from datetime import datetime
+import mongoengine as me
 from mongoengine import (
     Document,
     EmbeddedDocument,
@@ -15,20 +16,20 @@ from mongoengine import (
 )
 
 
-class Variant(EmbeddedDocument):
+class Variant(me.EmbeddedDocument):
     """
     Embedded inside Product — not a separate collection.
     Each variant represents a specific size/color combination of a product.
     Embedding is correct here because variants are always read with their product
     and the list is bounded (no product has 10,000 variants).
     """
-    variant_id = StringField(required=True)       # UUID string, set on creation
-    size       = StringField()                    # e.g. "42", "L", "XL" — optional
-    color      = StringField()                    # e.g. "Black/Red" — optional
-    sku        = StringField(required=True)        # Stock Keeping Unit — unique within product
-    price      = FloatField(required=True, min_value=0)  # Can differ from base_price
-    stock      = IntField(default=0, min_value=0)
-    images     = ListField(StringField())          # Cloudinary URLs specific to this variant
+    variant_id = me.StringField(required=True)       # UUID string, set on creation
+    size       = me.StringField()                    # e.g. "42", "L", "XL" — optional
+    color      = me.StringField()                    # e.g. "Black/Red" — optional
+    sku        = me.StringField(required=True)        # Stock Keeping Unit — unique within product
+    price      = me.FloatField(required=True, min_value=0)  # Can differ from base_price
+    stock      = me.IntField(default=0, min_value=0)
+    images     = me.ListField(StringField())          # Cloudinary URLs specific to this variant
 
     def __str__(self):
         return f"Variant({self.sku}, size={self.size}, color={self.color})"

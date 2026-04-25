@@ -25,3 +25,4 @@ REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
     'user': '10000/hour',
     'login': '100/minute',   # high limit for dev — still needs to exist
 }
+

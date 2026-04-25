@@ -74,9 +74,15 @@ const Login = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
 
           {/* API Error */}
-          {error && typeof error === 'string' && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-              <p className="text-red-400 text-sm">{error}</p>
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl">
+              <p className="text-red-400 text-sm text-center">
+                {typeof error === 'string'
+                  ? error
+                  : error?.detail
+                  ?? error?.non_field_errors?.[0]
+                  ?? 'Login failed. Please check your credentials.'}
+              </p>
             </div>
           )}
 

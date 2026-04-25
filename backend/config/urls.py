@@ -13,6 +13,8 @@ urlpatterns = [
         path('users/', include('apps.users.urls')),
 
         path("", include("apps.products.urls")),
+
+        path('', include('apps.cart.urls')),
     ])),
 ]
 

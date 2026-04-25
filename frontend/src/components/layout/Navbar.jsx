@@ -6,7 +6,7 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { useSelector } from 'react-redux'
-import { selectCartCount } from '../../store/cartSlice'
+import { toggleCartDrawer, selectCartItemCount } from '../../store/cartSlice';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../store/authSlice';
 
@@ -20,9 +20,11 @@ import { logoutUser } from '../../store/authSlice';
 const Navbar = () => {
   const navigate            = useNavigate()
   const { user, isAuthenticated, logout } = useAuth()
-  const cartCount           = useSelector(selectCartCount)
+  const cartCount           = useSelector(selectCartItemCount)
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('');
+  const dispatch = useDispatch()
+  const itemCount = useSelector(selectCartItemCount)
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -81,17 +83,18 @@ const Navbar = () => {
             </Link>
 
             {/* Cart icon */}
-            <Link
-              to="/cart"
-              className="relative text-slate-400 hover:text-white transition-colors"
-            >
-              <ShoppingBag size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-violet-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">
-                  {cartCount > 9 ? '9+' : cartCount}
+            <button
+              onClick={() => dispatch(toggleCartDrawer())}
+              className="relative p-1.5 text-slate-400 hover:text-white transition-colors"
+              aria-label="Open cart">
+              <ShoppingCart size={20} />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-violet-600 text-white text-xs
+                  font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {itemCount > 9 ? '9+' : itemCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* Auth section */}
             {isAuthenticated ? (

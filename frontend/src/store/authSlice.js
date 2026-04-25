@@ -2,7 +2,9 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { login, register, logout, getMe } from '../api/authAPI'
-
+// import authAPI from '../api/authAPI';
+import { getSessionKey } from '../api/cartAPI';
+import { mergeCart, clearCart } from './cartSlice';
 // ─────────────────────────────────────────────
 // ASYNC THUNKS
 //
@@ -12,20 +14,21 @@ import { login, register, logout, getMe } from '../api/authAPI'
 
 // Login — sends credentials, sets cookies server-side
 export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async (credentials, { rejectWithValue }) => {
+  'auth/login',
+  async (credentials, { dispatch, rejectWithValue }) => {
     try {
-      const response = await login(credentials)
-      return response.data.user
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.error ||
-        error.response?.data ||
-        'Login failed. Please try again.'
-      )
+      const response = await login(credentials);
+      // After login, merge any guest cart items into the user's cart
+      const sessionKey = getSessionKey();
+      if (sessionKey) {
+        await dispatch(mergeCart(sessionKey));
+      }
+      return response.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || 'Login failed.');
     }
-  }
-)
+  },
+);
 
 // Register — creates account
 export const registerUser = createAsyncThunk(
@@ -45,15 +48,18 @@ export const registerUser = createAsyncThunk(
 
 // Logout — clears cookies server-side
 export const logoutUser = createAsyncThunk(
-  'auth/logoutUser',
-  async (_, { rejectWithValue }) => {
+  'auth/logout',
+  async (_, { dispatch, rejectWithValue }) => {
     try {
-      await logout()
-    } catch (error) {
-      return rejectWithValue('Logout failed.')
+      await logout();
+      dispatch(clearCart());
+      localStorage.removeItem('guest_session_key');
+    } catch (err) {
+      return rejectWithValue(err.response?.data || 'Logout failed.');
     }
-  }
-)
+  },
+);
+
 
 // Initialize auth — called on app startup to
 // restore user state from the access cookie
