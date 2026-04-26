@@ -14,6 +14,10 @@ import ForgotPassword from './pages/auth/ForgotPassword'
 import ProductList   from './pages/ProductList'
 import ProductDetail from './pages/ProductDetail'
 import Cart from './pages/Cart'
+import Checkout from './pages/Checkout';
+import CheckoutPayment  from './pages/CheckoutPayment';
+import OrderConfirmation from './pages/OrderConfirmation';
+import Orders from './pages/user/Orders';
 
 const RootLayout = () => {
   return (
@@ -90,6 +94,7 @@ const router = createBrowserRouter([
       { path: '/products',       element: <ProductList /> },
       { path: '/products/:slug', element: <ProductDetail /> },
       { path: '/cart',           element: <Cart /> },
+      { path: '/order-confirmation/:orderNumber', element: <OrderConfirmation /> },
       {
         element: <GuestRoute />,
         children: [
@@ -102,6 +107,9 @@ const router = createBrowserRouter([
         element: <ProtectedRoute />,
         children: [
           { path: '/profile', element: <div className="p-8 text-white">Profile — Week 10</div> },
+          { path: '/checkout', element: <Checkout /> },
+          { path: '/checkout/payment/:orderId', element: <CheckoutPayment /> },
+          { path: '/orders', element: <Orders /> },
         ],
       },
       { path: '*', element: <NotFound /> },

@@ -51,7 +51,9 @@ LOCAL_APPS = [
     'apps.users',
     'apps.core',
     'apps.products',
-    'apps.cart',  
+    'apps.cart', 
+    'apps.orders',
+    'apps.payments', 
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -132,6 +134,15 @@ cloudinary.config(
     api_secret=env('CLOUDINARY_API_SECRET'),
     secure=True,          # Always use HTTPS URLs
 )
+
+# ── IntaSend ─────────────────────────────────────────────────────────────────
+INTASEND_PUBLISHABLE_KEY = env('INTASEND_PUBLISHABLE_KEY')
+INTASEND_API_TOKEN       = env('INTASEND_API_TOKEN')
+INTASEND_WEBHOOK_SECRET  = env('INTASEND_WEBHOOK_SECRET')
+INTASEND_TEST_MODE       = env.bool('INTASEND_TEST_MODE', default=True)
+
+# Base URL for building redirect links back to the frontend after payment
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:5173')
 
 # Ensure MongoDB indexes exist on every startup.
 # create_index() is idempotent — safe to call repeatedly.
